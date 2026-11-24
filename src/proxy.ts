@@ -33,17 +33,78 @@ function parseStudioPreview(value: string | null | undefined) {
   return { template, palette, font };
 }
 
-function withStudioHeaders(request: NextRequest, preview: { template: string; palette: string; font: string }) {
+function withStudioHeaders(
+  request: NextRequest,
+  preview: { template: string; palette: string; font: string },
+  proceed: (init?: Parameters<typeof NextResponse.next>[0]) => NextResponse
+) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-preview-template", preview.template);
   requestHeaders.set("x-preview-palette", preview.palette);
   requestHeaders.set("x-preview-font", preview.font);
   requestHeaders.set("x-preview-studio", "1");
-  return NextResponse.next({ request: { headers: requestHeaders } });
+  return proceed({ request: { headers: requestHeaders } });
+}
+
+/**
+ * Subdomain portfolios: `<handle>.<app domain>` serves the same portfolio as
+ * `<app domain>/<handle>`. The app domain is taken from `NEXT_PUBLIC_APP_URL` (e.g. "https://example.com") and must
+ * be set for this to work in production; `<handle>.localhost` always works for
+ * local development. Hosts like `www` or the bare root domain are untouched.
+ */
+const NON_PORTFOLIO_SUBDOMAINS = new Set(["www", "app", "api"]);
+const HANDLE_LABEL = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/;
+
+function getConfiguredRootHost(): string | null {
+  const value = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  if (!value) return null;
+  try {
+    return new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`).hostname.toLowerCase();
+  } catch {
+    return null;
+  }
+}
+
+function getSubdomainHandle(hostHeader: string | null): string | null {
+  if (!hostHeader) return null;
+  const host = hostHeader.split(":")[0].toLowerCase();
+  const roots = ["localhost"];
+  const configured = getConfiguredRootHost();
+  if (configured) roots.push(configured);
+  for (const root of roots) {
+    if (!host.endsWith(`.${root}`)) continue;
+    const label = host.slice(0, -(root.length + 1));
+    // Only a single label counts (a.b.example.com is not a portfolio).
+    if (label.includes(".") || !HANDLE_LABEL.test(label) || NON_PORTFOLIO_SUBDOMAINS.has(label)) return null;
+    return label;
+  }
+  return null;
 }
 
 export async function proxy(request: NextRequest) {
-  const { pathname, searchParams } = request.nextUrl;
+  const { searchParams } = request.nextUrl;
+  let pathname = request.nextUrl.pathname;
+
+  const subdomainHandle = getSubdomainHandle(request.headers.get("host"));
+  const originalUrl = request.nextUrl.clone();
+  if (subdomainHandle) {
+    // Accounts live on the root domain (session cookies are host-bound).
+    if (pathname.startsWith("/dashboard") || pathname === "/login" || pathname === "/register") {
+      const rootUrl = request.nextUrl.clone();
+      rootUrl.host = request.headers.get("host")!.replace(`${subdomainHandle}.`, "");
+      return NextResponse.redirect(rootUrl);
+    }
+    // Links inside a portfolio may already include "/<handle>"; don't double it.
+    const alreadyPrefixed = pathname === `/${subdomainHandle}` || pathname.startsWith(`/${subdomainHandle}/`);
+    if (!alreadyPrefixed) pathname = `/${subdomainHandle}${pathname === "/" ? "" : pathname}`;
+  }
+  // On a subdomain, pass requests through as a rewrite to the handle's path.
+  const proceed = (init?: Parameters<typeof NextResponse.next>[0]) => {
+    if (!subdomainHandle) return NextResponse.next(init);
+    const target = originalUrl.clone();
+    target.pathname = pathname;
+    return NextResponse.rewrite(target, init);
+  };
   const sessionCookie = request.cookies.get("pb_session")?.value;
 
   // Handle exiting preview mode
@@ -101,7 +162,7 @@ export async function proxy(request: NextRequest) {
       `${searchParams.get("template")}.${searchParams.get("palette")}.${searchParams.get("font")}`
     );
     if (preview) {
-      const response = withStudioHeaders(request, preview);
+      const response = withStudioHeaders(request, preview, proceed);
       response.cookies.set(STUDIO_COOKIE, `${preview.template}.${preview.palette}.${preview.font}`, {
         path: "/",
         sameSite: "lax",
@@ -112,7 +173,7 @@ export async function proxy(request: NextRequest) {
   }
   if (request.headers.get("sec-fetch-dest") === "iframe" && !pathname.startsWith("/dashboard")) {
     const preview = parseStudioPreview(request.cookies.get(STUDIO_COOKIE)?.value);
-    if (preview) return withStudioHeaders(request, preview);
+    if (preview) return withStudioHeaders(request, preview, proceed);
   }
 
   // Template preview (`?template=<id>`, used by the public template gallery).
@@ -124,7 +185,7 @@ export async function proxy(request: NextRequest) {
   if (profileHandle && templateParam && VALID_TEMPLATES.includes(templateParam)) {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-preview-template", templateParam);
-    const response = NextResponse.next({
+    const response = proceed({
       request: { headers: requestHeaders },
     });
     response.cookies.set(PREVIEW_COOKIE, `${profileHandle}:${templateParam}`, {
@@ -144,12 +205,12 @@ export async function proxy(request: NextRequest) {
   ) {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-preview-template", previewTemplate);
-    return NextResponse.next({
+    return proceed({
       request: { headers: requestHeaders },
     });
   }
 
-  return NextResponse.next();
+  return proceed();
 }
 
 export const config = {
