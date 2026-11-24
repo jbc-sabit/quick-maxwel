@@ -42,8 +42,26 @@ function withStudioHeaders(request: NextRequest, preview: { template: string; pa
   return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
+/**
+ * Per-user subdomains: `sabit.<ROOT_DOMAIN>` serves `<ROOT_DOMAIN>/sabit`.
+ * ROOT_DOMAIN is the bare host the app lives on, including the port when it
+ * has one (e.g. "mydomain.com" or "localhost:3000"). Unset = feature off.
+ */
+const RESERVED_SUBDOMAINS = new Set(["www", "app", "api", "admin", "dashboard", "mail", "static", "assets"]);
+
+function getProfileSubdomain(hostHeader: string | null): { handle: string; rootHost: string } | null {
+  const rootHost = process.env.ROOT_DOMAIN?.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/+$/, "");
+  const host = hostHeader?.trim().toLowerCase();
+  if (!rootHost || !host || !host.endsWith(`.${rootHost}`)) return null;
+  const handle = host.slice(0, -(rootHost.length + 1));
+  // Exactly one label, a valid handle, and not a name we keep for the platform.
+  if (!/^[a-z0-9][a-z0-9-]*$/.test(handle) || RESERVED_SUBDOMAINS.has(handle)) return null;
+  return { handle, rootHost };
+}
+
 export async function proxy(request: NextRequest) {
-  const { pathname, searchParams } = request.nextUrl;
+  let { pathname } = request.nextUrl;
+  const { searchParams } = request.nextUrl;
   const sessionCookie = request.cookies.get("pb_session")?.value;
 
   // Handle exiting preview mode
@@ -55,6 +73,34 @@ export async function proxy(request: NextRequest) {
     response.cookies.delete(PREVIEW_COOKIE);
     return response;
   }
+
+  // Subdomain -> profile. `/foo` on sabit.<root> is served from `/sabit/foo`.
+  let rewriteTarget: URL | null = null;
+  const subdomain = getProfileSubdomain(request.headers.get("host"));
+  if (subdomain) {
+    const { handle, rootHost } = subdomain;
+    // Sign-in and the dashboard live on the main domain only.
+    if (/^\/(dashboard|login|register)(\/|$)/.test(pathname)) {
+      const url = new URL(request.url);
+      return NextResponse.redirect(`${url.protocol}//${rootHost}${url.pathname}${url.search}`);
+    }
+    // Real files (logo.svg, robots.txt, ...) are served as they are.
+    if (!/\.[a-z0-9]+$/i.test(pathname)) {
+      if (pathname === `/${handle}` || pathname.startsWith(`/${handle}/`)) {
+        // Links generated as /<handle>/... get the clean subdomain URL.
+        const url = new URL(request.url);
+        url.pathname = pathname.slice(handle.length + 1) || "/";
+        return NextResponse.redirect(url, 308);
+      }
+      pathname = `/${handle}${pathname === "/" ? "" : pathname}`;
+      rewriteTarget = new URL(request.url);
+      rewriteTarget.pathname = pathname;
+    }
+  }
+  const next = (headers?: Headers) => {
+    const init = headers ? { request: { headers } } : undefined;
+    return rewriteTarget ? NextResponse.rewrite(rewriteTarget, init) : NextResponse.next(init);
+  };
 
   let isAuthenticated = false;
   // A session for the public demo account is invalid in production; clear it
@@ -124,9 +170,7 @@ export async function proxy(request: NextRequest) {
   if (profileHandle && templateParam && VALID_TEMPLATES.includes(templateParam)) {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-preview-template", templateParam);
-    const response = NextResponse.next({
-      request: { headers: requestHeaders },
-    });
+    const response = next(requestHeaders);
     response.cookies.set(PREVIEW_COOKIE, `${profileHandle}:${templateParam}`, {
       path: "/",
       sameSite: "lax",
@@ -144,12 +188,10 @@ export async function proxy(request: NextRequest) {
   ) {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-preview-template", previewTemplate);
-    return NextResponse.next({
-      request: { headers: requestHeaders },
-    });
+    return next(requestHeaders);
   }
 
-  return NextResponse.next();
+  return next();
 }
 
 export const config = {
