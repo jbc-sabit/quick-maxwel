@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { FileUploadField } from "@/components/ui/file-upload-field";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { subdomainHost } from "@/lib/site";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, AlertCircle, CheckCircle2, Loader2, Save, MapPin, Globe, Sparkles } from "lucide-react";
@@ -77,13 +78,13 @@ export default function ProfileForm({ user }: ProfileFormProps) {
 
             <div className="space-y-1.5">
               <Label htmlFor="handle" className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-                Public Handle (Permanent)
+                Your Subdomain (Permanent)
               </Label>
               <Input
                 id="handle"
                 type="text"
                 disabled
-                value={`@${user.handle}`}
+                value={subdomainHost(user.handle)}
                 className="h-11 rounded-xl bg-zinc-950/40 border-zinc-800/60 text-sm font-mono text-zinc-500 cursor-not-allowed"
               />
             </div>

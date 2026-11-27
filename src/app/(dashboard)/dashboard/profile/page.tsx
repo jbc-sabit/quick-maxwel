@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/db";
 import { users } from "@/db/schema";
@@ -31,3 +32,5 @@ export default async function DashboardProfilePage() {
     />
   );
 }
+
+export const metadata: Metadata = { title: "Profile" };

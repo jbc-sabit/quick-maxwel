@@ -25,6 +25,8 @@ import {
   FolderKanban,
 } from "lucide-react";
 import Link from "next/link";
+import { subdomainHost } from "@/lib/site";
+import { LinkedinIcon as Linkedin } from "@/components/icons";
 
 export default async function DashboardOverviewPage() {
   const user = await requireAuth();
@@ -139,6 +141,23 @@ export default async function DashboardOverviewPage() {
 
   return (
     <div className="w-full space-y-8">
+      {experiencesCount.count === 0 && (
+        <Link
+          href="/dashboard/import"
+          className="group flex items-center gap-4 rounded-2xl border border-sky-500/30 bg-sky-500/10 p-5 hover:bg-sky-500/15 transition-colors"
+        >
+          <div className="p-3 rounded-xl bg-sky-500/20">
+            <Linkedin className="h-5 w-5 text-sky-400" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-bold text-zinc-50">Skip the typing — import from LinkedIn</p>
+            <p className="text-xs text-zinc-400">
+              Bring in your experience, certifications and projects in under a minute.
+            </p>
+          </div>
+          <ArrowRight className="h-4 w-4 text-sky-400 group-hover:translate-x-0.5 transition-transform" />
+        </Link>
+      )}
       {/* Welcome & Public Link Card */}
       <div className="p-6 sm:p-8 rounded-3xl bg-zinc-900/60 border border-zinc-800/80 shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-80 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -153,7 +172,7 @@ export default async function DashboardOverviewPage() {
                 <span className="h-1.5 w-1.5 rounded-full bg-sky-400 animate-pulse" />
                 <span>Live Portfolio Active</span>
               </Badge>
-              <span className="text-xs font-mono text-zinc-400">/{user.handle}</span>
+              <span className="text-xs font-mono text-zinc-400">{subdomainHost(user.handle)}</span>
             </div>
 
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white">

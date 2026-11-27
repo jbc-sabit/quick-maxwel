@@ -1,6 +1,6 @@
 # PortfoliooSite
 
-A multi-tenant portfolio platform. Users sign up, manage their content (articles, experience, achievements, services, events) from a dashboard, choose one of six templates, and publish a public site at `/<handle>`.
+A multi-tenant portfolio platform. Users sign up, manage their content (articles, experience, achievements, services, events) from a dashboard, choose one of six templates, and publish a public site on their own subdomain (`<handle>.<root domain>`).
 
 **Stack:** Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · PostgreSQL · Drizzle ORM · TipTap · JWT sessions (`jose`)
 

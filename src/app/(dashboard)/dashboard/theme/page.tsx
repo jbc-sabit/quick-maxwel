@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/db";
 import { portfolioSettings } from "@/db/schema";
@@ -24,3 +25,5 @@ export default async function DashboardThemePage() {
     />
   );
 }
+
+export const metadata: Metadata = { title: "Theme Studio" };

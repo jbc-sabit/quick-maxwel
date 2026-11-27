@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/db";
 import { events } from "@/db/schema";
@@ -141,3 +142,5 @@ export default async function DashboardEventsPage() {
     </div>
   );
 }
+
+export const metadata: Metadata = { title: "Events" };

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/db";
 import { experiences } from "@/db/schema";
@@ -23,3 +24,5 @@ export default async function EditExperiencePage({
 
   return <EditExperienceForm experience={exp} />;
 }
+
+export const metadata: Metadata = { title: "Edit position" };

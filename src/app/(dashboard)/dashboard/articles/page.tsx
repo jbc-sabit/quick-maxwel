@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/db";
 import { articles } from "@/db/schema";
@@ -140,3 +141,5 @@ export default async function DashboardArticlesPage() {
     </div>
   );
 }
+
+export const metadata: Metadata = { title: "Articles" };

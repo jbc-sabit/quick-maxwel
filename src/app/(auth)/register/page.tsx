@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { AlertCircle, ArrowRight, Lock, Mail, User, AtSign, Loader2, Sparkles, Layout } from "lucide-react";
 import Link from "next/link";
 import { TEMPLATES, TemplateId } from "@/lib/templates";
+import { ROOT_DOMAIN } from "@/lib/site";
 
 function RegisterForm() {
   const searchParams = useSearchParams();
@@ -40,7 +41,7 @@ function RegisterForm() {
           Create your portfolio
         </CardTitle>
         <CardDescription className="text-sm text-zinc-400 leading-relaxed">
-          Claim your custom handle and publish your multi-page showcase in seconds.
+          Claim your own subdomain and publish your multi-page showcase in seconds.
         </CardDescription>
       </CardHeader>
 
@@ -75,10 +76,10 @@ function RegisterForm() {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <Label htmlFor="handle" className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
-                Portfolio Handle
+                Your Subdomain
               </Label>
               <span className="text-[11px] font-mono text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded-full border border-sky-500/20">
-                /{handle || "handle"}
+                {handle || "yourname"}.{ROOT_DOMAIN}
               </span>
             </div>
             <div className="relative">

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { BrandMark } from "@/components/brand-mark";
 import Link from "next/link";
+import { LinkedinIcon as Linkedin } from "@/components/icons";
 import { usePathname } from "next/navigation";
 import { logoutAction } from "@/actions/auth";
 import {
@@ -25,6 +26,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { subdomainHost } from "@/lib/site";
 
 interface DashboardShellProps {
   user: {
@@ -51,6 +53,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
     { label: "Events", href: "/dashboard/events", icon: Calendar },
     { label: "Inquiries", href: "/dashboard/inbox", icon: Mail },
     { label: "Theme Studio", href: "/dashboard/theme", icon: Palette },
+    { label: "Import", href: "/dashboard/import", icon: Linkedin },
     { label: "Profile", href: "/dashboard/profile", icon: User },
   ];
 
@@ -91,7 +94,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
             )}
             <div className="overflow-hidden min-w-0">
               <div className="font-semibold text-sm text-zinc-100 truncate">{user.name}</div>
-              <div className="text-xs text-sky-400 font-mono truncate">@{user.handle}</div>
+              <div className="text-xs text-sky-400 font-mono truncate">{subdomainHost(user.handle)}</div>
             </div>
           </div>
 
@@ -174,7 +177,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
               rel="noopener noreferrer"
               className="px-2.5 py-1 rounded-lg text-xs font-mono font-semibold bg-sky-500/10 border border-sky-500/20 text-sky-400 flex items-center gap-1"
             >
-              <span>/{user.handle}</span>
+              <span>{subdomainHost(user.handle)}</span>
               <ExternalLink className="h-3 w-3" />
             </a>
 
@@ -196,7 +199,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
             <div className="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800 flex items-center justify-between">
               <div>
                 <div className="font-semibold text-xs text-white">{user.name}</div>
-                <div className="text-[11px] text-zinc-400 font-mono">@{user.handle}</div>
+                <div className="text-[11px] text-zinc-400 font-mono">{subdomainHost(user.handle)}</div>
               </div>
               <button
                 type="button"
@@ -270,14 +273,14 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
               <ThemeToggle className="h-8 w-8 rounded-lg border border-zinc-700 bg-zinc-800/60 text-zinc-300 hover:text-white hover:bg-zinc-800" iconClassName="h-3.5 w-3.5" />
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900/80 border border-zinc-800 text-xs">
                 <span className="h-2 w-2 rounded-full bg-sky-400 animate-pulse" />
-                <span className="text-zinc-400">Live Address:</span>
+                <span className="text-zinc-400">Your subdomain:</span>
                 <a
                   href={`/${user.handle}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="font-mono font-bold text-sky-400 hover:underline flex items-center gap-1"
                 >
-                  <span>/{user.handle}</span>
+                  <span>{subdomainHost(user.handle)}</span>
                   <ExternalLink className="h-3 w-3" />
                 </a>
               </div>

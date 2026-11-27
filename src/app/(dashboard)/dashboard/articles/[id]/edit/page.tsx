@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/db";
 import { articles } from "@/db/schema";
@@ -23,3 +24,5 @@ export default async function EditArticlePage({
 
   return <EditArticleForm article={article} userHandle={user.handle} />;
 }
+
+export const metadata: Metadata = { title: "Edit article" };

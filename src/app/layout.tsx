@@ -4,6 +4,7 @@ import "./globals.css";
 import { cookies } from "next/headers";
 import { THEME_COOKIE, parseThemeMode } from "@/lib/theme-mode";
 import { ThemeModeSync } from "@/components/theme-mode-sync";
+import { SITE_NAME, siteUrl } from "@/lib/seo";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,8 +17,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PortfoliooSite — Multi-Page Portfolio Platform",
-  description: "Build, customize, and publish multi-page personal portfolios with Next.js, Postgres, and Drizzle.",
+  metadataBase: new URL(siteUrl()),
+  title: {
+    default: `${SITE_NAME} — Your portfolio on your own subdomain`,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description:
+    "Build, customize and publish a multi-page personal portfolio on your own subdomain. Pick a template, import from LinkedIn, and go live in minutes.",
+  applicationName: SITE_NAME,
+  openGraph: { type: "website", siteName: SITE_NAME },
+  twitter: { card: "summary" },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

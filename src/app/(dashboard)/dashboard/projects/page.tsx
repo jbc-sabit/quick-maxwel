@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/db";
 import { projects, PROJECT_STATUS_LABELS } from "@/db/schema";
@@ -141,3 +142,5 @@ export default async function DashboardProjectsPage() {
     </div>
   );
 }
+
+export const metadata: Metadata = { title: "Projects" };

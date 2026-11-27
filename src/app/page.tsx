@@ -30,7 +30,30 @@ import {
   Globe,
   Users,
 } from "lucide-react";
+import type { Metadata } from "next";
+import { SITE_NAME } from "@/lib/seo";
 import Link from "next/link";
+import { subdomainHost, ROOT_DOMAIN } from "@/lib/site";
+
+export const metadata: Metadata = {
+  title: { absolute: `${SITE_NAME} — Your portfolio on your own subdomain` },
+  description:
+    "Create a multi-page portfolio on your own subdomain (you.portfolioosite.dev). Choose from six templates, import your career from LinkedIn, add projects, articles and services, and receive client inquiries in one dashboard.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    title: `${SITE_NAME} — Your portfolio on your own subdomain`,
+    description:
+      "Six templates, LinkedIn import, projects, articles, services and an inbox — published on your own subdomain in minutes.",
+    url: "/",
+  },
+  twitter: {
+    card: "summary",
+    title: `${SITE_NAME} — Your portfolio on your own subdomain`,
+    description: "Build and publish a multi-page portfolio on your own subdomain in minutes.",
+  },
+};
 
 export default async function HomePage() {
   const session = await getSession();
@@ -223,7 +246,7 @@ export default async function HomePage() {
                   className="w-full sm:w-auto h-12 px-7 rounded-xl bg-sky-500 hover:bg-sky-400 text-black font-bold text-sm transition-all shadow-lg shadow-sky-500/20"
                 >
                   <Link href="/register">
-                    <span>Claim Your Portfolio Handle</span>
+                    <span>Claim Your Subdomain</span>
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Link>
                 </Button>
@@ -270,9 +293,9 @@ export default async function HomePage() {
               <div className="space-y-1">
                 <div className="text-xs font-bold text-white flex items-center gap-1.5">
                   <CheckCircle2 className="h-3.5 w-3.5 text-sky-400" />
-                  <span>Personal Handle</span>
+                  <span>Your Own Subdomain</span>
                 </div>
-                <p className="text-[11px] text-zinc-400">Share your clean address e.g. /{demoHandle}.</p>
+                <p className="text-[11px] text-zinc-400">Share a clean link like {subdomainHost(demoHandle)}.</p>
               </div>
             </div>
           </div>
@@ -323,7 +346,7 @@ export default async function HomePage() {
                 <div className="flex items-center gap-3">
                   <span className="h-3 w-3 rounded-full bg-sky-400 animate-pulse" />
                   <span className="font-mono text-sm text-zinc-300">
-                    portfolioosite.dev/<strong className="text-sky-400">{demoHandle}</strong>
+                    <strong className="text-sky-400">{demoHandle}</strong>.{ROOT_DOMAIN}
                   </span>
                 </div>
 
@@ -595,9 +618,9 @@ export default async function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="p-7 rounded-3xl bg-zinc-900/50 border border-zinc-800/80 space-y-4">
                 <div className="text-2xl font-black text-sky-400 font-mono">01</div>
-                <h3 className="text-lg font-bold text-white">Claim Your Personal Address</h3>
+                <h3 className="text-lg font-bold text-white">Claim Your Own Subdomain</h3>
                 <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
-                  Reserve your unique handle (e.g. <code className="text-sky-400">/{demoHandle}</code>) with simple one-click registration and authentication.
+                  Reserve your unique subdomain (e.g. <code className="text-sky-400">{subdomainHost(demoHandle)}</code>) with simple one-click registration and authentication.
                 </p>
               </div>
 

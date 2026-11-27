@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/db";
 import { achievements } from "@/db/schema";
@@ -143,3 +144,5 @@ export default async function DashboardAchievementsPage() {
     </div>
   );
 }
+
+export const metadata: Metadata = { title: "Achievements" };

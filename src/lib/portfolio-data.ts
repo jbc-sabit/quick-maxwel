@@ -3,10 +3,11 @@ import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
+import { cache } from "react";
 import { TEMPLATES, PALETTES, FONTS, TEMPLATE_SIGNATURE_STYLES, TemplateId, ColorPalette, FontFamily } from "./templates";
 
 
-export async function getPortfolioData(handle: string, explicitTemplate?: string) {
+async function loadPortfolioData(handle: string, explicitTemplate?: string) {
   const cleanHandle = handle.toLowerCase().trim();
 
   const user = await db.query.users.findFirst({
@@ -99,4 +100,7 @@ export async function getPortfolioData(handle: string, explicitTemplate?: string
   };
 }
 
-export type PortfolioUser = Awaited<ReturnType<typeof getPortfolioData>>;
+/** Request-scoped: metadata and page render share one query. */
+export const getPortfolioData = cache(loadPortfolioData);
+
+export type PortfolioUser = Awaited<ReturnType<typeof loadPortfolioData>>;

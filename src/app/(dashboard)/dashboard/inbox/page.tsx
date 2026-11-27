@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/db";
 import { contacts } from "@/db/schema";
@@ -172,3 +173,5 @@ export default async function DashboardInboxPage() {
     </div>
   );
 }
+
+export const metadata: Metadata = { title: "Inquiries" };

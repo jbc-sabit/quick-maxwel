@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getPortfolioData } from "@/lib/portfolio-data";
 import { getPaletteConfig, FONTS, FontFamily, TemplateId } from "@/lib/templates";
 import TemplateNavbar from "@/components/templates/nav/template-navbar";
@@ -7,6 +8,18 @@ import { StudioPreviewBridge } from "@/components/templates/nav/studio-preview-b
 import React from "react";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ handle: string }>;
+}): Promise<Metadata> {
+  const { handle } = await params;
+  const p = await getPortfolioData(handle);
+  const home = p.settings?.seoTitle || [p.name, p.headline].filter(Boolean).join(" — ");
+  // Sub-pages set a short title ("Projects"); the template appends the owner's name.
+  return { title: { default: home, template: `%s | ${p.name}` } };
+}
 
 export default async function PortfolioLayout({
   children,

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/db";
 import { experiences } from "@/db/schema";
@@ -142,3 +143,5 @@ export default async function DashboardExperiencePage() {
     </div>
   );
 }
+
+export const metadata: Metadata = { title: "Experience" };
